@@ -10,6 +10,6 @@ class RandomWalk:
 
     def step(self) -> Node:
         neighbors = self.graph.adj_list[self.current_node]
-        self.current_node = self.random.choice(neighbors)
+        self.current_node = self.random.choice(neighbors + [self.current_node])
         self.time += 1
         return self.current_node
