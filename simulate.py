@@ -9,11 +9,13 @@ def main():
     desc = open("computation.tm", 'r').read()
     tm = TuringMachine(Rules(desc), {}, 'a', 0)
 
-    model = Hourglass(random_bits = 4, computation = tm)
+    BITS = 8
+    model = Hourglass(random_bits = BITS, computation = tm)
 
     sample_sizes = [1, 2, 5, 10, 20, 50, 100]
     output_probs = []
-    RUN_LENGTH = 10000
+    C = 500
+    RUN_LENGTH = C * (BITS ** 2)
     TRIALS = 100
 
     walk = RandomWalk(model, random.choice([node for node in model.adj_list if "half" in node.data]))
@@ -29,7 +31,7 @@ def main():
                     found_outputs += 1.
                     break
                 
-        output_probs.append(found_outputs)
+        output_probs.append(found_outputs / TRIALS)
             
     print(output_probs)
     print(sample_sizes)
@@ -42,8 +44,8 @@ def main():
         geom_point() + \
         scale_x_log10() + \
         geom_line(aes(group = 1), color = "red") + \
-        labs(title = "Las Vegas Model - Simulated Probability of Observing a\nValid Output by the Nth Measurement",
-             x = "Number of Measurements", y = "Probability of Seeing Valid Output (n=100)")
+        labs(title = f"Las Vegas Model - Simulated Probability of Observing a Valid Output\n by the Nth Measurement on {BITS}-bit Bitstring-Inversion TM",
+             x = f"Number of Measurements T Time Apart (T={C}*r^2={RUN_LENGTH})", y = f"Probability of Seeing Valid Output (n={TRIALS})")
     plt.save("plot.png")
 
 

@@ -39,14 +39,15 @@ class HalfHourglass(Graph):
             random_tape = {i: c for i, c in enumerate(bstr)}
 
             tm_one = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
-            comp_graph, start, end = tm_to_graph(tm_one)
-            for node in comp_graph.adj_list:
+            comp_graph_one, start, end = tm_to_graph(tm_one)
+            node_list_one = list(comp_graph_one.adj_list.keys())
+            for node in comp_graph_one.adj_list:
                 node.name = "comp_" + bstr + "_one_" + node.name
                 node.data["half"] = half
                 node.data["randomness"] = bstr
-            self.union(comp_graph)
+            self.union(comp_graph_one)
             self.add_edge(random_node, start)
-            output_length = len(comp_graph.adj_list) * 2 + randomizer.num_layers
+            output_length = len(comp_graph_one.adj_list) * 2 + randomizer.num_layers
             prev = end
             for counter in range(output_length):
                 node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": bstr})
@@ -54,14 +55,21 @@ class HalfHourglass(Graph):
                 prev = node
 
             tm_two = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
-            comp_graph, start, end = tm_to_graph(tm_two)
-            for node in comp_graph.adj_list:
+            comp_graph_two, start, end = tm_to_graph(tm_two)
+            for node in comp_graph_two.adj_list:
                 node.name = "comp_" + bstr + "_two_" + node.name
                 node.data["half"] = half
                 node.data["randomness"] = bstr
-            self.union(comp_graph)
+            node_list_two = list(comp_graph_two.adj_list.keys())
+            self.union(comp_graph_two)
+            ### STITCH THE TWO COMPUTATIONS TOGETHER
+            for i, node in enumerate(node_list_two):
+                if i > 0:
+                    self.add_edge(node, node_list_one[i - 1])
+                if i < len(node_list_one) - 1:
+                    self.add_edge(node, node_list_one[i + 1])
             self.add_edge(random_node, start)
-            output_length = len(comp_graph.adj_list) * 2 + randomizer.num_layers
+            output_length = len(comp_graph_two.adj_list) * 2 + randomizer.num_layers
             prev = end
             for counter in range(output_length):
                 node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": bstr})
