@@ -54,7 +54,7 @@ class Graph:
         return nodes, node_idxs, np.linalg.matrix_power(mat, n)
     
     def distribution_n_steps(self, start: Node, n: int) -> tuple[list[Node], dict[Node, int], np.ndarray]:
-        nodes, node_idxs, mat = self.markov_matrix_n_steps()
+        nodes, node_idxs, mat = self.markov_matrix_n_steps(n)
         initial_state = np.zeros((1, len(nodes)))
         initial_state[node_idxs[start]] = 1
         return initial_state @ mat

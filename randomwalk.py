@@ -10,6 +10,13 @@ class RandomWalk:
 
     def step(self) -> Node:
         neighbors = self.graph.adj_list[self.current_node]
-        self.current_node = self.random.choice(neighbors + [self.current_node])
-        self.time += 1
+        hop = {neighbor: random.expovariate(1) for neighbor in neighbors}
+        self.current_node = min(neighbors, key=lambda n: hop[n])
+        self.time += min(hop.values())
+        return self.current_node
+    
+    def run_for_time(self, time: float) -> Node:
+        start = self.time
+        while self.time <= start + time:
+            self.step()
         return self.current_node

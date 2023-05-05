@@ -1,6 +1,9 @@
 from graph import Graph, tm_to_graph
 from turing_machine import TuringMachine
 
+def binary_string(n: int, bits: int) -> str:
+    return ''.join([str((n >> k) & 1) for k in range(bits-1, -1, -1)])
+
 class HalfHourglass(Graph):
     def __init__(self, random_bits: int, computation: TuringMachine, half = 'top'):
         super().__init__(False)
@@ -15,8 +18,8 @@ class HalfHourglass(Graph):
             current_layer = []
             for randomness in range(2 ** i):
                 for battery in range(2 ** (random_bits - i)):
-                    random_string = ''.join([str((randomness >> k) & 1) for k in range(i-1, -1, -1)])
-                    node = self.add_node('rand_gen', {"randomness": random_string, "battery": battery, "half": half})
+                    node = self.add_node('rand_gen', {"randomness": binary_string(randomness, i), \
+                                                      "battery": binary_string(battery, random_bits - i), "half": half})
 
                     last_battery = battery * 2
                     last_randomness = randomness // 2
@@ -33,17 +36,19 @@ class HalfHourglass(Graph):
         # COMPUTATION + HOLD OUTPUT
         for randomness in range(nodes_per_layer):
             prev = prev_layer[randomness]
-            random_tape = {i: c for i, c in enumerate(prev.data['randomness'])}
+            randomness = prev.data['randomness']
+            random_tape = {i: c for i, c in enumerate(randomness)}
             tm = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
             comp_graph, start, end = tm_to_graph(tm)
             for node in comp_graph.adj_list:
                 node.data["half"] = half
+                node.data["randomness"] = randomness
             comp_length = len(comp_graph.adj_list)
             self.union(comp_graph)
             self.add_edge(prev, start)
             prev = end
             for counter in range(comp_length):
-                node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half})
+                node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": randomness})
                 self.add_edge(node, prev)
                 prev = node
 
