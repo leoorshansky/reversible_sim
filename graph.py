@@ -27,7 +27,10 @@ class Graph:
         return node
 
     def union(self, other: 'Graph'):
-        self.adj_list |= other.adj_list
+        nodes = self.adj_list.keys() | other.adj_list.keys()
+        for node in nodes:
+            neighbors = set(self.adj_list.get(node, [])) | set(other.adj_list.get(node, []))
+            self.adj_list[node] = list(neighbors)
         
     def __str__(self) -> str:
         output = []

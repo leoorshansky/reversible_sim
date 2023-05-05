@@ -4,60 +4,86 @@ from turing_machine import TuringMachine
 def binary_string(n: int, bits: int) -> str:
     return ''.join([str((n >> k) & 1) for k in range(bits-1, -1, -1)])
 
-class HalfHourglass(Graph):
-    def __init__(self, random_bits: int, computation: TuringMachine, half = 'top'):
+class Randomizer(Graph):
+    def __init__(self, random_bits: int):
         super().__init__(False)
+        self.outer_layers = {}
+        self.num_layers = random_bits + 1
+        self.nodes_per_layer = 2 ** random_bits
 
-        # RAND GEN
-        nodes_per_layer = 2 ** random_bits
+        rand_strings = [binary_string(n, random_bits) for n in range(self.nodes_per_layer)]
+        self.outer_layers["bottom"] = {bstr: self.add_node('randomizer', {'layer': 0, 'bits': bstr}) for bstr in rand_strings}
 
-        self.core_layer = [self.add_node('rand_gen', {"randomness": '0',"battery": i, "half": half}) for i in range(nodes_per_layer)]
-
-        prev_layer = self.core_layer
-        for i in range(1, random_bits + 1):
-            current_layer = []
-            for randomness in range(2 ** i):
-                for battery in range(2 ** (random_bits - i)):
-                    node = self.add_node('rand_gen', {"randomness": binary_string(randomness, i), \
-                                                      "battery": binary_string(battery, random_bits - i), "half": half})
-
-                    last_battery = battery * 2
-                    last_randomness = randomness // 2
-
-                    left_parent_idx = last_randomness * (2 ** (random_bits - i + 1)) + last_battery
-                    right_parent_idx = left_parent_idx + 1
-
-                    self.add_edge(node, prev_layer[left_parent_idx])
-                    self.add_edge(node, prev_layer[right_parent_idx])
-
-                    current_layer.append(node)
+        prev_layer = self.outer_layers["bottom"]
+        for layer in range(1, self.num_layers):
+            current_layer = {bstr: self.add_node('randomizer', {'layer': layer, 'bits': bstr}) for bstr in rand_strings}
+            bit_to_change = layer - 1
+            for bstr, node in current_layer.items():
+                self.add_edge(node, prev_layer[bstr])
+                # flip the bit
+                bstr = bstr[:bit_to_change] + str(1 - int(bstr[bit_to_change])) + bstr[bit_to_change + 1:]
+                self.add_edge(node, prev_layer[bstr])
             prev_layer = current_layer
         
+        self.outer_layers["top"] = current_layer
+
+class HalfHourglass(Graph):
+    def __init__(self, randomizer: Randomizer, computation: TuringMachine, half = 'top'):
+        super().__init__(False)
+        self.union(randomizer)
+
+        random_layer = randomizer.outer_layers[half]
+        
         # COMPUTATION + HOLD OUTPUT
-        for randomness in range(nodes_per_layer):
-            prev = prev_layer[randomness]
-            randomness = prev.data['randomness']
-            random_tape = {i: c for i, c in enumerate(randomness)}
-            tm = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
-            comp_graph, start, end = tm_to_graph(tm)
+        for bstr, random_node in random_layer.items():
+            random_tape = {i: c for i, c in enumerate(bstr)}
+
+            tm_one = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
+            comp_graph, start, end = tm_to_graph(tm_one)
             for node in comp_graph.adj_list:
+                node.name = "comp_" + bstr + "_one_" + node.name
                 node.data["half"] = half
-                node.data["randomness"] = randomness
-            comp_length = len(comp_graph.adj_list)
+                node.data["randomness"] = bstr
             self.union(comp_graph)
-            self.add_edge(prev, start)
+            self.add_edge(random_node, start)
+            output_length = len(comp_graph.adj_list) * 2 + randomizer.num_layers
             prev = end
-            for counter in range(comp_length):
-                node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": randomness})
+            for counter in range(output_length):
+                node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": bstr})
                 self.add_edge(node, prev)
                 prev = node
 
-class Hourglass(HalfHourglass):
+            tm_two = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
+            comp_graph, start, end = tm_to_graph(tm_two)
+            for node in comp_graph.adj_list:
+                node.name = "comp_" + bstr + "_two_" + node.name
+                node.data["half"] = half
+                node.data["randomness"] = bstr
+            self.union(comp_graph)
+            self.add_edge(random_node, start)
+            output_length = len(comp_graph.adj_list) * 2 + randomizer.num_layers
+            prev = end
+            for counter in range(output_length):
+                node = self.add_node('hold_output', {"counter": counter, "output": end.data['tape'], "half": half, "randomness": bstr})
+                self.add_edge(node, prev)
+                prev = node
+
+class Hourglass(Graph):
     def __init__(self, random_bits: int, computation: TuringMachine):
-        super().__init__(random_bits, computation)
-        bottom_half = HalfHourglass(random_bits, computation, 'bottom')
+        super().__init__(False)
+
+        randomizer = Randomizer(random_bits)
+        for node in randomizer.adj_list:
+            node.name = "rand_" + node.name
+
+        top_half = HalfHourglass(randomizer, computation, 'top')
+        bottom_half = HalfHourglass(randomizer, computation, 'bottom')
+        for node in top_half.adj_list:
+            if node.type != 'randomizer':
+                node.name = "top_" + node.name
         for node in bottom_half.adj_list:
-            node.name = str(int(node.name) + len(self.adj_list))
+            if node.type != 'randomizer':
+                node.name = "bottom_" + node.name
+
+        self.union(top_half)
         self.union(bottom_half)
-        for core_index in range(len(self.core_layer)):
-            self.add_edge(self.core_layer[core_index], bottom_half.core_layer[core_index])

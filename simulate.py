@@ -16,8 +16,8 @@ def main():
     RUN_LENGTH = 10000
     TRIALS = 100
 
-    walk = RandomWalk(model, random.choice(model.core_layer))
-    half = None
+    walk = RandomWalk(model, random.choice([node for node in model.adj_list if "half" in node.data]))
+    half = walk.current_node.data["half"]
     for sample_size in sample_sizes:
         print(sample_size)
         found_outputs = 0.
@@ -25,9 +25,10 @@ def main():
             for _ in range(sample_size):
                 node = walk.run_for_time(RUN_LENGTH)
                 if node.type == "hold_output" and node.data["half"] != half:
+                    half = node.data["half"]
                     found_outputs += 1.
                     break
-                half = node.data["half"]
+                
         output_probs.append(found_outputs)
             
     print(output_probs)
