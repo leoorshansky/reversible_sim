@@ -15,7 +15,7 @@ def main():
     max_trials = 20
 
     output_probs = np.zeros(20)
-    C = 50
+    C = 500
     RUN_LENGTH = C * (BITS ** 2)
     TRIALS = 500
 
@@ -47,8 +47,8 @@ def main():
     plt = ggplot(df, aes(x = "sample_sizes", y = "output_probs")) + \
         geom_point() + \
         geom_line(aes(group = 1), color = "red") + \
-        labs(title = f"Las Vegas Model - Simulated Probability of Observing a Valid Output\n by the Nth Measurement on {BITS}-bit Bitstring-Inversion TM",
-             x = f"Number of Measurements T Time Apart (T={C}*r^2={RUN_LENGTH})", y = f"Probability of Seeing Valid Output ({TRIALS} trials)")
+        labs(title = f"Las Vegas Model - Simulated Probability of Observing a Valid Output\n by the Nth Measurement",
+             x = f"Number of Measurements T Time Apart", y = f"Probability of Seeing Valid Output ({TRIALS} trials)")
     plt.save("plot.png")
 
 
