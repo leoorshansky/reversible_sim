@@ -67,7 +67,7 @@ class TuringMachine:
     def __init__(self, rules: Rules, tape: dict[int, int], initial_state: str, initial_head_loc: int):
         assert isinstance(rules, Rules)
         self.rules = rules
-        self.tape = tape
+        self.tape = tape.copy()
         self.state = initial_state
         self.head_loc = initial_head_loc
         self.halted = False
