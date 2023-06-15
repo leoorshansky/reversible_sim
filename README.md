@@ -14,7 +14,7 @@ options:
   -h, --help            show this help message and exit
   -i TM_INITIAL_STATE, --tm_initial_state TM_INITIAL_STATE
   -b TM_RANDOM_BITS, --tm_random_bits TM_RANDOM_BITS
-                        number of random bits to feed into the Turing machine input
+                        number of random bits to feed into the Turing machine as input
   -t T, --time_between_observations T
                         units of time in between consecutive observations, defaults to 500 * bits^2
 ```
