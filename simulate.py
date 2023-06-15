@@ -57,8 +57,8 @@ def main():
         description="Runs a simulated model on a specified Turing machine")
     parser.add_argument('model_kind', choices=['lv', 'mc'], help = 'lv for Las Vegas, mc for Monte Carlo')
     parser.add_argument('tm_filename')
-    parser.add_argument('-i', '--tm_initial_state', required=True)
-    parser.add_argument('-b', '--tm_random_bits', required=True, type=int, help = 'number of random bits to feed into the Turing machine input')
+    parser.add_argument('-i', '--tm_initial_state', required=True, help = 'the head state to start the Turing machine in')
+    parser.add_argument('-b', '--tm_random_bits', required=True, type=int, help = 'number of random bits to feed into the Turing machine as input')
     parser.add_argument('-t', '--time_between_observations', dest='T', required=False, help = 'units of time in between consecutive observations, defaults to 500 * bits^2')
 
     args = parser.parse_args()
