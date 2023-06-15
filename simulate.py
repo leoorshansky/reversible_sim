@@ -85,7 +85,7 @@ def main():
         node = walk.run_for_time(run_time)
         if node.type == "hold_output" and node.data["half"] != half:
             half = node.data["half"]
-            print('Observed output:', node.data['output'])
+            print('Observation: input =', node.data['randomness'], '-> output =', node.data['output'])
         else:
             print('Observation not ready')
 
