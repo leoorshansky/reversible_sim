@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Brownian Computation Simulator
+message: >-
+  A high level simulator of a distribution sampler driven
+  entirely by brownian motion
+type: software
+authors:
+  - given-names: Leo
+    family-names: Orshansky
+    affiliation: The University of Texas at Austin
+    orcid: 'https://orcid.org/0009-0005-4445-7517'
+repository-code: 'https://github.com/leoorshansky/reversible_sim'
+keywords:
+  - zero energy computation
+  - distribution sampling
+  - random walks
