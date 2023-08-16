@@ -15,8 +15,7 @@ class RandomWalk:
         self.time += min(hop.values())
         return self.current_node
     
-    def run_for_time(self, time: float) -> Node:
+    def run_for_time(self, time: float):
         start = self.time
         while self.time <= start + time:
             self.step()
-        return self.current_node

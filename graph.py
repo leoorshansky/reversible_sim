@@ -1,4 +1,3 @@
-from turing_machine import TuringMachine, tape_string
 import numpy as np
 
 class Node:
@@ -27,10 +26,14 @@ class Graph:
         return node
 
     def union(self, other: 'Graph'):
-        nodes = self.adj_list.keys() | other.adj_list.keys()
-        for node in nodes:
+        if self.directed != other.directed:
+            raise Exception("cannot take the union of a directed and an undirected graph")
+        for node in self.adj_list:
             neighbors = set(self.adj_list.get(node, [])) | set(other.adj_list.get(node, []))
             self.adj_list[node] = list(neighbors)
+        for node in other.adj_list:
+            if node not in self.adj_list:
+                self.adj_list[node] = other.adj_list[node]
         
     def __str__(self) -> str:
         output = []
@@ -74,15 +77,3 @@ class Graph:
             prob = types.setdefault(node.type, 0)
             types[node.type] = prob + mat[i]
         return types
-    
-def tm_to_graph(tm: TuringMachine) -> tuple[Graph, Node, Node]:
-    graph = Graph()
-    initial = graph.add_node('computation', {'tape': tape_string(tm.tape), 'head': tm.head_loc, 'state': tm.state})
-    previous = initial
-    while True:
-        if tm.forward(): # when halted
-            break
-        current = graph.add_node('computation', {'tape': tape_string(tm.tape), 'head': tm.head_loc, 'state': tm.state})
-        graph.add_edge(previous, current)
-        previous = current
-    return graph, initial, previous

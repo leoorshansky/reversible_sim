@@ -97,6 +97,3 @@ class TuringMachine:
     
     def reverse(self) -> bool:
         return self.apply_rule(self.rules.reverse)
-    
-def tape_string(tape: dict) -> str:
-    return ''.join([value for key, value in sorted(tape.items(), key = lambda x: x[0])])
