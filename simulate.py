@@ -54,7 +54,7 @@ import argparse
 #     plt.save("plot.png")
 
 def main():
-    parser = argparse.ArgumentParser(prog="simulate", 
+    parser = argparse.ArgumentParser(prog="python3 simulate.py", 
         description="Runs a simulated model on a specified Turing machine")
     parser.add_argument('model_kind', choices=['lv', 'mc'], help = 'lv for Las Vegas, mc for Monte Carlo')
     parser.add_argument('tm_filename')
