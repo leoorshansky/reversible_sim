@@ -19,3 +19,6 @@ class RandomWalk:
         start = self.time
         while self.time <= start + time:
             self.step()
+
+    def observe(self) -> tuple[bool, Node]:
+        pass

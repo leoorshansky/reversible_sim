@@ -77,7 +77,7 @@ class HalfHourglass(Graph):
         for bstr, random_node_one, random_node_two in random_layer_consecutive_pairs:
             random_tape = {i: c for i, c in enumerate(bstr)}
 
-            tm_one = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
+            tm_one = TuringMachine(computation.rules, random_tape, computation.state)
             comp_output_graph_one, comp_one_start, _ = computation_and_hold_output(tm_one, comp_length_to_output_length)
             resize_list(self.layers, len(randomizer.layers) + len(comp_output_graph_one.adj_list), lambda: [])
             for i, node in enumerate(comp_output_graph_one.adj_list):
@@ -90,7 +90,7 @@ class HalfHourglass(Graph):
             self.add_edge(random_node_one, comp_one_start)
             self.add_edge(random_node_two, comp_one_start)
 
-            tm_two = TuringMachine(computation.rules, random_tape, computation.state, computation.head_loc)
+            tm_two = TuringMachine(computation.rules, random_tape, computation.state)
             comp_output_graph_two, comp_two_start, _ = computation_and_hold_output(tm_two, comp_length_to_output_length)
             for i, node in enumerate(comp_output_graph_two.adj_list):
                 node.name = f"comp{bstr}_track1_{node.name}"

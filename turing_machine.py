@@ -64,12 +64,12 @@ class Rules:
 
 
 class TuringMachine:
-    def __init__(self, rules: Rules, tape: dict[int, int], initial_state: str, initial_head_loc: int):
+    def __init__(self, rules: Rules, tape: dict[int, int], initial_state: str):
         assert isinstance(rules, Rules)
         self.rules = rules
         self.tape = tape.copy()
         self.state = initial_state
-        self.head_loc = initial_head_loc
+        self.head_loc = 0
         self.halted = False
     
     def apply_rule(self, rules: Rules) -> bool:
@@ -97,3 +97,18 @@ class TuringMachine:
     
     def reverse(self) -> bool:
         return self.apply_rule(self.rules.reverse)
+
+def binary_string(n: int, bits: int) -> str:
+    return ''.join([str((n >> k) & 1) for k in range(bits-1, -1, -1)])
+
+def longest_computation_path(tm_rules: Rules, initial_state:str, input_length: int) -> int:
+    print('finding longest computation path of Turing machine, may take forever (google "Halting Problem")')
+    longest = 0
+    for inp in range(2 ** input_length):
+        bstr = binary_string(inp, bits=input_length)
+        tm = TuringMachine(tm_rules, {i:c for i, c in enumerate(bstr)}, initial_state)
+        timer = 0
+        while not tm.forward():
+            timer += 1
+        longest = max(longest, timer)
+    return longest
