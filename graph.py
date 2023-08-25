@@ -77,3 +77,38 @@ class Graph:
             prob = types.setdefault(node.type, 0)
             types[node.type] = prob + mat[i]
         return types
+    
+    def to_graphviz_layered(self, clusterings:list[tuple[str, list[int]]] = []) -> str:
+        output = 'graph G {\nrankdir="LR";\n'
+        layers_graphed = set()
+        node_num = 0
+        cluster_num = 0
+        for cluster_name, cluster_layers in clusterings:
+            output += f'  subgraph cluster_{cluster_num} {{\nlabel="{cluster_name}";\n'
+            cluster_num += 1
+            for layer in cluster_layers:
+                layers_graphed.add(layer)
+                output += f'    subgraph cluster_{cluster_num} {{\n'
+                output += '    label="";\n'
+                cluster_num += 1
+                for node in self.layers[layer]:
+                    node.in_graph_num = node_num
+                    output += f'      {node.in_graph_num} [tooltip="{node.name}"];\n'
+                    node_num += 1
+                output += '    }\n'
+            output += '  }\n'
+        for i, layer in enumerate(self.layers):
+            if i not in layers_graphed:
+                output += f'  subgraph cluster_{cluster_num} {{\n'
+                cluster_num += 1
+                for node in layer:
+                    node.in_graph_num = node_num
+                    output += f'    {node.in_graph_num} [tooltip="{node.name}"];\n'
+                    node_num += 1
+                output += '  }\n'
+        for node, neighbors in self.adj_list.items():
+            for neighbor in neighbors:
+                if node.name < neighbor.name:
+                    output += f'  {node.in_graph_num} -- {neighbor.in_graph_num};\n'
+        output += '}\n'
+        return output

@@ -30,6 +30,13 @@ class LasVegasSampler(Graph):
         self.union(top_half)
         self.union(bottom_half)
 
+        top_layers = list(reversed([layer for layer in top_half.layers if layer[0].type != "randomizer"]))
+        randomizer_layers = [layer for layer in bottom_half.layers if layer[0].type == "randomizer"]
+        bottom_layers = [layer for layer in bottom_half.layers if layer[0].type != "randomizer"]
+        self.randomizer_layer_start_index = len(top_layers)
+        self.bottom_layer_start_index = self.randomizer_layer_start_index + len(randomizer_layers)
+        self.layers = top_layers + randomizer_layers + bottom_layers
+
 class LasVegasRandomWalk(RandomWalk):
     def __init__(self, model:LasVegasSampler, random_seed = None):
         super().__init__(model, random.choice([node for node in model.adj_list if "half" in node.data]), random_seed)

@@ -4,6 +4,7 @@ from randomwalk import *
 from turing_machine import *
 from plot import lv_create_plot_output_ready_prob, mc_create_plot_output_ready_prob
 import argparse
+import webbrowser, urllib.parse
 
 
 def main():
@@ -14,8 +15,10 @@ def main():
     parser.add_argument('-i', '--tm-initial-state', required=True, help = 'the head state to start the Turing machine in')
     parser.add_argument('-b', '--tm-random-bits', required=True, type=int, help = 'number of random bits to feed into the Turing machine as input')
     parser.add_argument('-t', '--time-between-observations', dest='T', required=False, type=int, help = 'units of time in between consecutive observations, defaults to 100 * comp_length^2 * bits^2')
-    parser.add_argument('-p', '--print-model', action="store_true", help = 'do not run simulation, only print the computation graph of the constructed model')
     parser.add_argument('-c', '--create-plot', choices=['output_ready_prob'], required=False, help='instead of running the standard simulation, output the desired plot')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-p', '--print-model', action="store_true", help = 'do not run simulation, only print the computation graph of the constructed model (prints in GraphViz format)')
+    group.add_argument('-g', '--interactive-graph', action="store_true", help = 'like --print-model, but opens a web browser with an interactive view of the computation graph of the model')
 
     args = parser.parse_args()
     
@@ -35,8 +38,27 @@ def main():
         raise "Model type not supported (yet)"
     print("Done")
 
-    if args.print_model:
-        print(model)
+    if args.print_model or args.interactive_graph:
+        if args.model_kind == "lv":
+            clusterings = [("top half", range(model.randomizer_layer_start_index)),
+                           ("randomizer", range(model.randomizer_layer_start_index, model.bottom_layer_start_index)),
+                           ("bottom half", range(model.bottom_layer_start_index, len(model.layers)))]
+            graphviz_string = model.to_graphviz_layered(clusterings)
+        elif args.model_kind == "mc":
+            clusterings = [("m = 1", range(len(model.layers) // 2)),
+                           ("m = -1", range(len(model.layers) // 2, len(model.layers)))]
+            graphviz_string = model.to_graphviz_layered(clusterings)
+        if args.print_model:
+            print(graphviz_string)
+        elif args.interactive_graph:
+            quoted_string = urllib.parse.quote(graphviz_string, safe="")
+            url = "https://dreampuf.github.io/GraphvizOnline/#" + quoted_string
+            try:
+                webbrowser.open(url)
+            except OSError:
+                with open("graph.txt", 'w') as file:
+                    file.write(graphviz_string)
+                print("Graph is too big to be passed in the command line. Go to http://magjac.com/graphviz-visual-editor/ and paste the contents of the generated graph.txt")
         return
     
     match args.create_plot:
