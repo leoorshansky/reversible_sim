@@ -1,4 +1,4 @@
-# Simulator for the DNA29 Conference Paper Submission: "Harvesting Brownian Motion: Zero Energy Computational Sampling"
+# Simulator for the DNA29 Conference **Best Poster Award Winner**: "Harvesting Brownian Motion: Zero Energy Computational Sampling"
 
 ## Usage
 ```
