@@ -1,5 +1,7 @@
 # Simulator for the DNA29 Conference **Best Poster Award Winner**: "Harvesting Brownian Motion: Zero Energy Computational Sampling"
 
+[Read the paper here.](https://arxiv.org/pdf/2309.06957.pdf)
+
 ## Usage
 ```
 usage: python3 simulate.py [-h] -i TM_INITIAL_STATE -b TM_RANDOM_BITS [-t T] [-p] {lv,mc} tm_filename
